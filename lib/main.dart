@@ -57,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           IconButton(
             icon: const Icon(Icons.bar_chart, color: Colors.white),
             onPressed: () {
+              //I1.1. Người dùng mở ứng dụng và nhấn vào icon hình biểu đồ cột trên thanh điều hướng chính của giao diện màn hình chính 
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const StatisticsScreen()),
@@ -75,8 +76,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
 
       backgroundColor: const Color(0xFF336699),
-
-      // ✅ Đây là phần bạn yêu cầu thay thế
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -100,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
             ),
             onPressed: () {
-              // TODO: Bắt đầu đếm ngược
             },
             child: const Text("START", style: TextStyle(fontWeight: FontWeight.bold)),
           ),

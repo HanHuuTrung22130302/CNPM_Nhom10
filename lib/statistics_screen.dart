@@ -1,69 +1,92 @@
 import 'package:flutter/material.dart';
-import 'data/mock_data.dart';
-import 'widgets/stat_charts.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../services/api_service.dart';
 
-class StatisticsScreen extends StatelessWidget {
+class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
 
   @override
+  State<StatisticsScreen> createState() => _StatisticsScreenState();
+}
+
+class _StatisticsScreenState extends State<StatisticsScreen> {
+  late Future<StudyStatResponse> _statsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // I1.2. Giao diện thống kê gửi yêu cầu GET /api/stats?range=week để lấy dữ liệu thống kê mặc định (7 ngày gần nhất).
+    _statsFuture = ApiService().getStats("week");
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final averageHours = mockStats.map((e) => e.studyHours).reduce((a, b) => a + b) / mockStats.length;
-    final avgGoal = mockStats.map((e) => e.goalAchievedPercent).reduce((a, b) => a + b) / mockStats.length;
-
     return Scaffold(
-      appBar: AppBar(title: const Text("Thống kê học tập")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Số giờ học trung bình/ngày: ${averageHours.toStringAsFixed(1)} giờ"),
-            Text("Tỷ lệ đạt mục tiêu: ${avgGoal.toStringAsFixed(0)}%"),
-            const SizedBox(height: 12),
+      appBar: AppBar(title: const Text("📊 Phân tích & Thống kê")),
+      body: FutureBuilder<StudyStatResponse>(
+        future: _statsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // I1.8. Trong khi chờ dữ liệu, hiển thị loading
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            // I1.8. Nếu lỗi xảy ra khi lấy dữ liệu từ API
+            return Center(child: Text('Lỗi: ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            // I1.8. Không có dữ liệu để hiển thị
+            return const Center(child: Text('Không có dữ liệu.'));
+          }
 
-            const Text("Biểu đồ cột - Giờ học mỗi ngày", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 200, child: BarChartWidget(mockStats)),
+          final data = snapshot.data!;
+          // I1.8. Dữ liệu được nhận từ API và hiển thị biểu đồ + KPIs
 
-            const SizedBox(height: 12),
-
-            const Text("Biểu đồ tròn - Ưu tiên công việc", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 200, child: PieChartWidget(mockStats)),
-
-            const SizedBox(height: 12),
-
-            const Text("Biểu đồ đường - Xu hướng giờ học", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 200, child: LineChartWidget(mockStats)),
-
-            const SizedBox(height: 12),
-
-            const Text("Chi tiết theo ngày", style: TextStyle(fontWeight: FontWeight.bold)),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: mockStats.length,
-              itemBuilder: (context, index) {
-                final stat = mockStats[index];
-                return Card(
-                  child: ListTile(
-                    title: Text("${stat.date} - ${stat.studyHours} giờ học"),
-                    subtitle: Text(
-                        "${stat.completedTasks} công việc | ${stat.pomodoroSessions} Pomodoro | Mục tiêu: ${stat.goalAchievedPercent}%"),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const Text("Biểu đồ số giờ học mỗi ngày"),
+                SizedBox(
+                  height: 200,
+                  child: BarChart(
+                    BarChartData(
+                      barGroups:
+                          data.stats
+                              .map(
+                                (stat) => BarChartGroupData(
+                                  x: data.stats.indexOf(stat),
+                                  barRods: [
+                                    BarChartRodData(
+                                      toY: stat.studyHours,
+                                      color: Colors.blue,
+                                    ),
+                                  ],
+                                ),
+                              )
+                              .toList(),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, _) {
+                              return Text(data.stats[value.toInt()].date);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 20),
+                const Text("KPIs"),
+                Text("Số giờ học trung bình/ngày: ${data.kpi['avgStudy']}"),
+                Text(
+                  "Tỉ lệ hoàn thành công việc: ${data.kpi['taskCompletion']}%",
+                ),
+                Text("Tỉ lệ đạt mục tiêu: ${data.kpi['goalAchieved']}%"),
+              ],
             ),
-
-            const SizedBox(height: 12),
-
-            ElevatedButton.icon(
-              icon: const Icon(Icons.picture_as_pdf),
-              label: const Text("Xuất PDF"),
-              onPressed: () {
-                // TODO: Gọi hàm xuất PDF tại đây
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
