@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "622449107015",
+    "firebase_url": "https://cnpm-schedule-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "cnpm-schedule",
+    "storage_bucket": "cnpm-schedule.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:622449107015:android:6384eeac6a46243d5f9162",
+        "android_client_info": {
+          "package_name": "com.company.cnpm_gk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASlH54byvLX9t3nn_Z02a8wZK012FEsJg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
