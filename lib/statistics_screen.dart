@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study_timer/data/mock_data.dart';
 import 'package:study_timer/models/study_stat.dart';
+import 'package:study_timer/utils/statistics_filter.dart';
 import 'package:study_timer/widgets/line_chart.dart';
 import 'package:study_timer/widgets/bar_chart.dart';
 import 'package:study_timer/widgets/kpi_box.dart';
+import 'package:study_timer/utils/statistics_calculator.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -41,43 +43,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Future<void> exportPdf() async {
-    // TODO: Thêm code xuất PDF tại đây
-    // Ví dụ: gọi service backend hoặc tạo file PDF trực tiếp
+    // ..... code thực thi chức năng
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Chức năng xuất PDF chưa được triển khai')),
     );
   }
 
-  List<StudyStat> get _filteredStats {
-    return mockStats.where((stat) {
-      final date = stat.date;
-      return !date.isAfter(DateTime.now()) &&
-          date.isAfter(_startDate.subtract(const Duration(days: 1))) &&
-          date.isBefore(_endDate.add(const Duration(days: 1)));
-    }).toList();
-  }
+  List<StudyStat> get _filteredStats => filterStatsByDateRange(mockStats, _startDate, _endDate);
 
   @override
   Widget build(BuildContext context) {
     final stats = _filteredStats;
     final dateFormat = DateFormat('dd/MM');
-
-    final double totalStudyHours =
-        stats.isNotEmpty
-            ? stats.map((e) => e.studyHours).fold(0.0, (a, b) => a + b)
-            : 0.0;
-    final int totalTasks = stats
-        .map((e) => e.completedTasks)
-        .fold(0, (a, b) => a + b);
-    final double taskCompletionRate =
-        stats.isNotEmpty ? (totalTasks / (stats.length * 5)) * 100 : 0.0;
-    final double avgGoalAchieved =
-        stats.isNotEmpty
-            ? stats
-                    .map((e) => e.goalAchievedPercent)
-                    .fold(0.0, (a, b) => a + b) /
-                stats.length
-            : 0.0;
+    final double totalStudyHours = StatisticsCalculator.totalStudyHours(stats);
+    final double taskCompletionRate = StatisticsCalculator.taskCompletionRate(stats);
+    final double avgGoalAchieved = StatisticsCalculator.avgGoalAchieved(stats);
 
     return Scaffold(
       appBar: AppBar(title: const Text("📊 Phân tích & Thống kê")),
