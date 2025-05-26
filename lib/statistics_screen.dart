@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:study_timer/data/mock_data.dart';
 import 'package:study_timer/models/study_stat.dart';
-import 'package:study_timer/utils/statistics_filter.dart';
+import 'package:study_timer/services/statistics_service.dart';
 import 'package:study_timer/widgets/line_chart.dart';
 import 'package:study_timer/widgets/bar_chart.dart';
 import 'package:study_timer/widgets/kpi_box.dart';
@@ -18,13 +17,14 @@ class StatisticsScreen extends StatefulWidget {
 class _StatisticsScreenState extends State<StatisticsScreen> {
   late DateTime _startDate;
   late DateTime _endDate;
+  late Future<List<StudyStat>> _futureStats;
 
   @override
   void initState() {
     super.initState();
-    final today = DateTime.now();
-    _endDate = DateTime(today.year, today.month, today.day);
+    _endDate = DateTime.now();
     _startDate = _endDate.subtract(const Duration(days: 6));
+    _futureStats = StatisticsService.fetchStats(_startDate, _endDate);
   }
 
   Future<void> _selectDateRange() async {
@@ -38,96 +38,113 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       setState(() {
         _startDate = picked.start;
         _endDate = picked.end;
+        _futureStats = StatisticsService.fetchStats(_startDate, _endDate);
       });
     }
   }
 
   Future<void> exportPdf() async {
-    // ..... code thực thi chức năng
+    // Placeholder
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Chức năng xuất PDF chưa được triển khai')),
     );
   }
 
-  List<StudyStat> get _filteredStats => filterStatsByDateRange(mockStats, _startDate, _endDate);
-
   @override
   Widget build(BuildContext context) {
-    final stats = _filteredStats;
     final dateFormat = DateFormat('dd/MM');
-    final double totalStudyHours = StatisticsCalculator.totalStudyHours(stats);
-    final double taskCompletionRate = StatisticsCalculator.taskCompletionRate(stats);
-    final double avgGoalAchieved = StatisticsCalculator.avgGoalAchieved(stats);
 
     return Scaffold(
       appBar: AppBar(title: const Text("📊 Phân tích & Thống kê")),
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Phần thống kê hiện tại
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: FutureBuilder<List<StudyStat>>(
+              future: _futureStats,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Lỗi: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('Không có dữ liệu.'));
+                }
+
+                final stats = snapshot.data!;
+                final double totalStudyHours = StatisticsCalculator.totalStudyHours(stats);
+                final double taskCompletionRate = StatisticsCalculator.taskCompletionRate(stats);
+                final double avgGoalAchieved = StatisticsCalculator.avgGoalAchieved(stats);
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "📅 Thống kê từ ${dateFormat.format(_startDate)} đến ${dateFormat.format(_endDate)}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      // Thông tin ngày tháng + chọn ngày
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "📅 Thống kê từ ${dateFormat.format(_startDate)} đến ${dateFormat.format(_endDate)}",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: _selectDateRange,
+                            icon: const Icon(Icons.calendar_today, size: 16),
+                            label: const Text("Chọn"),
+                          ),
+                        ],
                       ),
-                      TextButton.icon(
-                        onPressed: _selectDateRange,
-                        icon: const Icon(Icons.calendar_today, size: 16),
-                        label: const Text("Chọn"),
+                      const SizedBox(height: 12),
+
+                      // KPI Boxes
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          KpiBox(
+                            icon: Icons.access_time,
+                            title: "Tổng giờ học",
+                            value: "${totalStudyHours.toStringAsFixed(1)} giờ",
+                          ),
+                          KpiBox(
+                            icon: Icons.check_circle,
+                            title: "Hoàn thành công việc",
+                            value: "${taskCompletionRate.toStringAsFixed(1)}%",
+                          ),
+                          KpiBox(
+                            icon: Icons.emoji_events,
+                            title: "Đạt mục tiêu",
+                            value: "${avgGoalAchieved.toStringAsFixed(1)}%",
+                          ),
+                        ],
                       ),
+
+                      const SizedBox(height: 24),
+                      const Text(
+                        "📊 Biểu đồ số giờ học mỗi ngày",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(height: 200, child: BarChartWidget(stats)),
+
+                      const SizedBox(height: 24),
+                      const Text(
+                        "📉 Biểu đồ số nhiệm vụ & phiên pomodoro mỗi ngày",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(height: 260, child: LineChartWidget(stats)),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      KpiBox(
-                        icon: Icons.access_time,
-                        title: "Tổng giờ học",
-                        value: "${totalStudyHours.toStringAsFixed(1)} giờ",
-                      ),
-                      KpiBox(
-                        icon: Icons.check_circle,
-                        title: "Hoàn thành công việc",
-                        value: "${taskCompletionRate.toStringAsFixed(1)}%",
-                      ),
-                      KpiBox(
-                        icon: Icons.emoji_events,
-                        title: "Đạt mục tiêu",
-                        value: "${avgGoalAchieved.toStringAsFixed(1)}%",
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    "📊 Biểu đồ số giờ học mỗi ngày",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(height: 200, child: BarChartWidget(stats)),
-                  const SizedBox(height: 24),
-                  const Text(
-                    "📉 Biểu đồ thống kê số nhiệm vụ và phiên pomodoro mỗi ngày",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(height: 260, child: LineChartWidget(stats)),
-                ],
-              ),
+                );
+              },
             ),
           ),
 
-          // Footer với nút Xuất PDF và bản quyền
+          // Footer
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
