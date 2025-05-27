@@ -11,10 +11,8 @@ class LineChartWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM');
 
-    // Danh sách ngày dạng text để hiển thị trục X
     final labels = stats.map((e) => dateFormat.format(e.date)).toList();
 
-    // Dữ liệu biểu đồ (dùng chỉ số làm x)
     final studySpots = List.generate(
       stats.length,
       (i) => FlSpot(i.toDouble(), stats[i].completedTasks.toDouble()),
@@ -30,6 +28,7 @@ class LineChartWidget extends StatelessWidget {
       children: [
         SizedBox(
           height: 220,
+          //I1.16. Hệ thống hiển thị biểu đồ (LineChart)
           child: LineChart(
             LineChartData(
               minY: 0,

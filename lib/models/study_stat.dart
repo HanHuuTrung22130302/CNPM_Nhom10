@@ -16,10 +16,10 @@ class StudyStat {
   factory StudyStat.fromJson(Map<String, dynamic> json) {
     return StudyStat(
       date: DateTime.parse(json['date']),
-      studyHours: (json['studyHours'] as num).toDouble(), // ✅ đảm bảo là double
+      studyHours: (json['studyHours'] as num).toDouble(),
       completedTasks: json['completedTasks'] as int,
       pomodoroSessions: json['pomodoroSessions'] as int,
-      goalAchievedPercent: (json['goalAchievedPercent'] as num).toDouble(), // ✅
+      goalAchievedPercent: (json['goalAchievedPercent'] as num).toDouble(),
     );
   }
 }

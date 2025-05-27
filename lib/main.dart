@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // I1.1 Hệ thống khởi tạo (AppBar) 
       appBar: AppBar(
         backgroundColor: const Color(0xFF336699),
         elevation: 0,
@@ -54,12 +55,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ],
         ),
         actions: [
-          IconButton(
+          IconButton(        
+            // I1.2 Hệ thống ánh xạ (Icon) thống kê vào màn hình chính (HomeScreen).
             icon: const Icon(Icons.bar_chart, color: Colors.white),
             onPressed: () {
-              //I1.1. Người dùng mở ứng dụng và nhấn vào icon hình biểu đồ cột trên thanh điều hướng chính của giao diện màn hình chính 
+              // I1.3 Hệ thống gán sự kiện nhấn cho (Icon) thống kê.
               Navigator.push(
                 context,
+                // I1.5. Hệ thống điều hướng sang màn hình thống kê (StatisticsScreen).
                 MaterialPageRoute(builder: (context) => const StatisticsScreen()),
               );
             },

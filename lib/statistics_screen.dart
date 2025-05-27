@@ -24,6 +24,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     super.initState();
     _endDate = DateTime.now();
     _startDate = _endDate.subtract(const Duration(days: 6));
+    // I1.6. Màn hình thống kê (StatistisScreen) được khởi tại và gọi hàm fetchStats() để lấy dữ liệu 7 ngày gần nhất.
     _futureStats = StatisticsService.fetchStats(_startDate, _endDate);
   }
 
@@ -93,6 +94,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                           TextButton.icon(
                             onPressed: _selectDateRange,
+                            // I1.17. Người dùng có thể click chọn (Icon) lịch ngày để chọn lại khoảng thời gian muốn cập nhật dữ liệu thống kê.
                             icon: const Icon(Icons.calendar_today, size: 16),
                             label: const Text("Chọn"),
                           ),
@@ -157,11 +159,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 const Text(
                   "© 2025 Study Timer App",
                   style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                ElevatedButton.icon(
-                  onPressed: exportPdf,
-                  icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text("Xuất PDF"),
                 ),
               ],
             ),

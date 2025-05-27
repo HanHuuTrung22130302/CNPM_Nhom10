@@ -21,7 +21,7 @@ class BarChartWidget extends StatelessWidget {
         ],
       );
     }).toList();
-
+    // I1.15. Hệ thống hiển thị biểu đồ (BarChart)
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
