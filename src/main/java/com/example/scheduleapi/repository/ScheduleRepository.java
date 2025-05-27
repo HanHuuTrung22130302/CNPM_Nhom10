@@ -8,5 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, String> {
+    // 1.9. Gọi findByDate(date) tìm kiếm lịch trong repository (Normal Flow)
+    // 1.12. Trả dữ liệu (Schedule*) từ repository (Normal Flow)
     List<Schedule> findByDate(String date);
 }

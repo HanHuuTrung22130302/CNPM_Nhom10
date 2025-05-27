@@ -29,8 +29,9 @@ public class ScheduleService implements CommandLineRunner {
 
         scheduleRepository.saveAll(dummySchedules);
     }
-
+    // 1.8. Gọi getSchedulesByDate(date) xử lý logic lấy dữ liệu lịch (Normal Flow)
     public List<Schedule> getSchedulesByDate(String date) {
+        // 1.13. Trả dữ liệu (Schedule*) từ service (Normal Flow)
         return scheduleRepository.findByDate(date);
     }
 

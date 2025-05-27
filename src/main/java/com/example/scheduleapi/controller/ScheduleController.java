@@ -17,9 +17,10 @@ public class ScheduleController {
     public ScheduleController(ScheduleService scheduleService) {
         this.scheduleService = scheduleService;
     }
-
+    // 1.7. Gọi getSchedulesByDate(date) truy vấn lịch theo ngày từ service (Normal Flow)
     @GetMapping
     public List<Schedule> getSchedulesByDate(@RequestParam("date") String date) {
+        // 1.14. Trả dữ liệu JSON từ controller (Normal Flow)
         return scheduleService.getSchedulesByDate(date);
     }
 
